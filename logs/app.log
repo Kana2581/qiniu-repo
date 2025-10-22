@@ -1,0 +1,196 @@
+[2025-10-21 15:37:56] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/1/completions Status: 200 Time: 1.62ms Body: {
+  "content": "hello",
+  "id": "string1"
+}
+[2025-10-21 15:53:19] [ERROR] [backend.app.routers.base_chat] SSE chat generation failed: 'ai' is not among the defined enum values. Enum name: messagetype. Possible values: text, image, code, other
+Traceback:
+Traceback (most recent call last):
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\sqlalchemy\sql\sqltypes.py", line 1709, in _object_value_for_elem
+    return self._object_lookup[elem]  # type: ignore[return-value]
+           ~~~~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'ai'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\pycharm_project\qiniuyun_project2\backend\app\routers\base_chat.py", line 48, in event_generator
+    async for chunk in handle_chat_completion(thread_id=session_id,content=chat_message.content,id=chat_message.id,db=db):
+  File "E:\pycharm_project\qiniuyun_project2\backend\app\services\agent_service.py", line 21, in handle_chat_completion
+    chat_message_bases = await fetch_valid_langgraph_chat_messages(session_id=thread_id, db=db,
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\pycharm_project\qiniuyun_project2\backend\app\services\chat_message_service.py", line 32, in fetch_valid_langgraph_chat_messages
+    chat_messages = await get_messages_by_thread_id(db, session_id,windows_size,langgraph_id)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\pycharm_project\qiniuyun_project2\backend\app\repositories\chat_message_repository.py", line 83, in get_messages_by_thread_id
+    result = await db.execute(stmt)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 449, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 203, in greenlet_spawn
+    result = context.switch(value)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\sqlalchemy\orm\context.py", line 309, in orm_execute_statement
+    return cls.orm_setup_cursor_result(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\sqlalchemy\orm\context.py", line 616, in orm_setup_cursor_result
+    return loading.instances(result, querycontext)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\sqlalchemy\orm\loading.py", line 262, in instances
+    _prebuffered = list(chunks(None))
+                   ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\sqlalchemy\orm\loading.py", line 220, in chunks
+    fetch = cursor._raw_all_rows()
+            ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\sqlalchemy\engine\result.py", line 541, in _raw_all_rows
+    return [make_row(row) for row in rows]
+            ^^^^^^^^^^^^^
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 22, in sqlalchemy.cyextension.resultproxy.BaseRow.__init__
+  File "lib/sqlalchemy/cyextension/resultproxy.pyx", line 79, in sqlalchemy.cyextension.resultproxy._apply_processors
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\sqlalchemy\sql\sqltypes.py", line 1829, in process
+    value = self._object_value_for_elem(value)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\sqlalchemy\sql\sqltypes.py", line 1711, in _object_value_for_elem
+    raise LookupError(
+LookupError: 'ai' is not among the defined enum values. Enum name: messagetype. Possible values: text, image, code, other
+
+[2025-10-21 16:30:29] [ERROR] [backend.app.routers.base_chat] SSE chat generation failed: StructuredTool does not support sync invocation.
+Traceback:
+Traceback (most recent call last):
+  File "E:\pycharm_project\qiniuyun_project2\backend\app\routers\base_chat.py", line 48, in event_generator
+    async for chunk in handle_chat_completion(thread_id=session_id,content=chat_message.content,id=chat_message.id,db=db):
+  File "E:\pycharm_project\qiniuyun_project2\backend\app\services\agent_service.py", line 33, in handle_chat_completion
+    print(graph.invoke({"messages": messages}))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\langgraph\pregel\main.py", line 3094, in invoke
+    for chunk in self.stream(
+                 ^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\langgraph\pregel\main.py", line 2679, in stream
+    for _ in runner.tick(
+             ^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\langgraph\pregel\_runner.py", line 167, in tick
+    run_with_retry(
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\langgraph\pregel\_retry.py", line 42, in run_with_retry
+    return task.proc.invoke(task.input, config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\langgraph\_internal\_runnable.py", line 656, in invoke
+    input = context.run(step.invoke, input, config, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\langgraph\_internal\_runnable.py", line 400, in invoke
+    ret = self.func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\langchain\tools\tool_node.py", line 632, in _func
+    outputs = list(
+              ^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\concurrent\futures\_base.py", line 619, in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\concurrent\futures\_base.py", line 317, in _result_or_cancel
+    return fut.result(timeout)
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\langchain_core\runnables\config.py", line 546, in _wrapped_fn
+    return contexts.pop().run(fn, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\langchain\tools\tool_node.py", line 835, in _run_one
+    return self._execute_tool_sync(tool_request, input_type, config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\langchain\tools\tool_node.py", line 784, in _execute_tool_sync
+    content = _handle_tool_error(e, flag=self._handle_tool_errors)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\langchain\tools\tool_node.py", line 367, in _handle_tool_error
+    content = flag(e)  # type: ignore [assignment, call-arg]
+              ^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\langchain\tools\tool_node.py", line 330, in _default_handle_tool_errors
+    raise e
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\langchain\tools\tool_node.py", line 747, in _execute_tool_sync
+    response = tool.invoke(call_args, config)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\langchain_core\tools\base.py", line 591, in invoke
+    return self.run(tool_input, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\langchain_core\tools\base.py", line 856, in run
+    raise error_to_raise
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\langchain_core\tools\base.py", line 825, in run
+    response = context.run(self._run, *tool_args, **tool_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.conda\envs\qiniuyun_backend\Lib\site-packages\langchain_core\tools\structured.py", line 92, in _run
+    raise NotImplementedError(msg)
+NotImplementedError: StructuredTool does not support sync invocation.
+During task with name 'tools' and id '2d192de5-d8eb-4559-6e57-72af55ecd10c'
+
+[2025-10-21 16:39:20] [ERROR] [backend.app.routers.base_chat] SSE chat generation failed: 'model'
+Traceback:
+Traceback (most recent call last):
+  File "E:\pycharm_project\qiniuyun_project2\backend\app\routers\base_chat.py", line 48, in event_generator
+    async for chunk in handle_chat_completion(thread_id=session_id,content=chat_message.content,id=chat_message.id,db=db):
+  File "E:\pycharm_project\qiniuyun_project2\backend\app\services\agent_service.py", line 41, in handle_chat_completion
+    res_message=chunk['model']['messages'][-1]
+                ~~~~~^^^^^^^^^
+KeyError: 'model'
+
+[2025-10-21 17:16:19] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/1/completions | Status=200 | Time=1.54ms | RequestBody={
+  "content": "你能读取1.txt文件吗",
+  "id": "string11"
+} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 17:19:32] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/1/completions | Status=200 | Time=1.09ms | RequestBody={
+  "content": "你能打开bilewater.mp3文件吗",
+  "id": "string12"
+} | ResponseBody=
+[2025-10-21 17:22:22] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/1/completions | Status=200 | Time=0.94ms | RequestBody={
+  "content": "你能打开bilewater.mp3文件吗",
+  "id": "string13"
+} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 17:22:44] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/1/completions | Status=200 | Time=0.51ms | RequestBody={
+  "content": "重新打开bilewater.mp3文件吗",
+  "id": "string13"
+} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 17:23:06] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/1/completions | Status=200 | Time=0.46ms | RequestBody={
+  "content": "重新打开bilewater.mp3文件吗",
+  "id": "string15"
+} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 17:27:18] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/1/completions | Status=200 | Time=1.05ms | RequestBody={
+  "content": "重新打开bilewater.mp3文件吗",
+  "id": "string15"
+} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 23:00:06] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/1/completions | Status=200 | Time=1.28ms | RequestBody={
+  "content": "string",
+  "id": "string"
+} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 23:07:52] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/1/completions | Status=200 | Time=0.57ms | RequestBody={"content":"11111","id":"2"} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 23:08:24] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/1/completions | Status=200 | Time=0.42ms | RequestBody={"content":"我是张辉，你是谁呀","id":"2"} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 23:12:12] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/2/completions | Status=200 | Time=0.53ms | RequestBody={"content":"你好呀","id":"bf7ea527-d849-4c9e-a53d-b96a02ec6544"} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 23:12:34] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/2/completions | Status=200 | Time=0.46ms | RequestBody={"content":"我刚刚问你什么","id":"6862af33-ce3c-490c-b831-be229a431674"} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 23:13:03] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/2/completions | Status=200 | Time=0.42ms | RequestBody={"content":"列一下目的的所有文件","id":"ef71ab2b-9e10-46e9-b240-0d21fae38161"} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 23:14:23] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/2/completions | Status=200 | Time=0.48ms | RequestBody={"content":"你帮我看看静夜思.txt里面有古诗吗","id":"311fffa0-cebe-4e1e-be7a-03b69950b2db"} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 23:15:29] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/2/completions | Status=200 | Time=0.55ms | RequestBody={"content":"你帮我把静夜思古诗添加到里面，然后在操作系统系统上打开该文件，我要检查你写的对不对","id":"d1ad756b-a259-465e-b495-01aed81ec5ed"} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 23:17:12] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/2/completions | Status=200 | Time=0.48ms | RequestBody={"content":"你看看目录下有哪些歌曲，你帮我创建一个musics目录，然后把歌曲都扔进去","id":"7c8fda98-7f27-4728-8768-ec0179e1056f"} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 23:19:34] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/2/completions | Status=200 | Time=0.46ms | RequestBody={"content":"out.origination.mp3其实是梦中的婚礼你帮我改一下名吧，然后我需要你改完名，播放一下这首歌","id":"43a13c2a-ff9b-486c-a704-5056420fb48d"} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 23:20:11] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/2/completions | Status=200 | Time=0.45ms | RequestBody={"content":"不赖","id":"33f87207-0489-4e50-bb27-279db4c2667e"} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 23:22:58] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/2/completions | Status=200 | Time=0.55ms | RequestBody={"content":"打开quicksort.cpp文件","id":"3f31e7a4-3b1e-473a-9b4b-369480cc0b6e"} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 23:23:38] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/2/completions | Status=200 | Time=0.43ms | RequestBody={"content":"你检查一下写的对不对","id":"a7987cd2-f7ab-4ffb-9e35-c209a366a579"} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 23:25:08] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/2/completions | Status=200 | Time=0.44ms | RequestBody={"content":"创建一个cpp目录，把所有cpp文件放进去","id":"da214422-a9f9-4559-a4b3-c941c2872295"} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-21 23:43:48] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/2/completions | Status=200 | Time=0.54ms | RequestBody={"content":"我想看看我的conda环境有哪些","id":"233dcae3-77b1-463a-abad-88aba77435e8"} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-22 00:22:31] [INFO] [backend.app.middlewares.logging] [SUCCESS] PUT /v1/config/config | Status=200 | Time=2.81ms | RequestBody={
+  "system_prompt": "string",
+  "theme": "string",
+  "notifications_enabled": true,
+  "font_size": 0,
+  "auto_save": true,
+  "language": "string",
+  "short_text_example": "string"
+} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>
+[2025-10-22 17:24:21] [INFO] [backend.app.middlewares.logging] [SUCCESS] POST /v1/chats/2/completions | Status=200 | Time=2.11ms | RequestBody={"content":"你好呀","id":"d8219387-deac-45d4-9282-2d0744ac5b11"} | ResponseBody=<Failed to read response body: '_StreamingResponse' object has no attribute 'body'>

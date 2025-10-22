@@ -1,0 +1,9 @@
+{
+    "system_prompt": "string",
+    "theme": "string",
+    "notifications_enabled": true,
+    "font_size": 0,
+    "auto_save": true,
+    "language": "string",
+    "short_text_example": "string"
+}
