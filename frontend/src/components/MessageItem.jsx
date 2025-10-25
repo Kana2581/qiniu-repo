@@ -1,7 +1,7 @@
-// ...existing code...
 import React, { useEffect, useState, useRef } from "react";
 import { apiFetch } from "../utils/api.js";
-import { Play, Pause } from 'lucide-react'; // 添加这一行
+import { Play, Pause, Volume2 } from "lucide-react";
+
 async function fetchAudioUrl(ttsKey) {
   const res = await apiFetch(`/oss?key=${encodeURIComponent(ttsKey)}`, {
     method: "POST",
@@ -9,7 +9,7 @@ async function fetchAudioUrl(ttsKey) {
   });
   if (!res.ok) throw new Error(`请求音频失败: ${res.status}`);
   const data = await res.json();
-  return data.url; // 假设返回 { url: "https://oss.xxx.com/file.mp3" }
+  return data.url;
 }
 
 export default function MessageItem({ message }) {
@@ -21,12 +21,11 @@ export default function MessageItem({ message }) {
   const audioRef = useRef(null);
 
   useEffect(() => {
-    // 清理：组件卸载时停止并释放音频
     return () => {
       if (audioRef.current) {
         try {
           audioRef.current.pause();
-        } catch (e) {}
+        } catch {}
         audioRef.current = null;
       }
     };
@@ -34,13 +33,11 @@ export default function MessageItem({ message }) {
 
   const handleTogglePlay = async () => {
     if (playing && audioRef.current) {
-      // 暂停
       audioRef.current.pause();
       setPlaying(false);
       return;
     }
 
-    // 如果已有实例但未播放，直接播放
     if (audioRef.current && audioUrl) {
       try {
         await audioRef.current.play();
@@ -52,14 +49,12 @@ export default function MessageItem({ message }) {
       return;
     }
 
-    // 尚未获取真实 URL，点击时才请求并播放
     if (!message.tts_key) return;
     setLoading(true);
     setError(null);
     try {
       const url = await fetchAudioUrl(message.tts_key);
       setAudioUrl(url);
-      // 使用 Audio 对象即时播放，避免依赖 DOM 更新
       const audio = new Audio(url);
       audioRef.current = audio;
       audio.onended = () => setPlaying(false);
@@ -75,42 +70,45 @@ export default function MessageItem({ message }) {
   };
 
   return (
-    <div className={`my-2 flex ${isUser ? "justify-end" : "justify-start"}`}>
     <div
-      className={`p-3 rounded-lg break-words ${
-        isUser
-          ? "bg-blue-500 text-white w-1/2"
-          : "bg-gray-200 text-black w-[70%]"
-      }`}
+      className={`my-5 flex ${isUser ? "justify-end" : "justify-start"} transition-all`}
     >
-        <p>{message.content}</p>
+      <div
+        className={`my-3 relative max-w-[70%] p-4 rounded-2xl shadow-sm text-sm leading-relaxed ${
+          isUser
+            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-br-none"
+            : "bg-white border border-gray-200 text-gray-800 rounded-bl-none"
+        }`}
+      >
+        <p className="whitespace-pre-wrap break-words">{message.content}</p>
 
         {!isUser && message.tts_key && (
-        <div className="mt-2 flex items-center">
-          <button
-            onClick={handleTogglePlay}
-            className={`px-4 py-2 rounded transition duration-300 ease-in-out ${
-              loading ? "bg-gray-400" : playing ? "bg-red-500 hover:bg-red-600" : "bg-green-500 hover:bg-green-600"
-            } text-white font-semibold shadow-md flex items-center`}
-            disabled={loading}
-          >
-            {loading ? (
-              "加载中..."
-            ) : playing ? (
-              <>
-                <Pause className="mr-2" /> 暂停
-              </>
-            ) : (
-              <>
-                <Play className="mr-2" /> 播放
-              </>
-            )}
-          </button>
-          {error && <div className="text-red-500 text-sm mt-1 ml-2">{error}</div>}
-        </div>
+          <div className="absolute -bottom-4 right-3">
+            <button
+              onClick={handleTogglePlay}
+              disabled={loading}
+              className={`w-10 h-10 flex items-center justify-center rounded-full shadow-md border transition-all duration-300 ${
+                loading
+                  ? "bg-gray-300 border-gray-300 cursor-not-allowed"
+                  : playing
+                  ? "bg-red-500 hover:bg-red-600 border-red-600 text-white"
+                  : "bg-green-500 hover:bg-green-600 border-green-600 text-white"
+              }`}
+            >
+              {loading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : playing ? (
+                <Pause size={20} />
+              ) : (
+                <Play size={20} />
+              )}
+            </button>
+          </div>
+        )}
+        {error && (
+          <div className="text-red-500 text-xs mt-2">{error}</div>
         )}
       </div>
     </div>
   );
 }
-// ...existing code...

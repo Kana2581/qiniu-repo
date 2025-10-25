@@ -44,7 +44,7 @@ export async function streamChat(content, onMessage, sessionId, opts = {}) {
         if (eventType === "message") {
           const chunk = data?.chunk?.data?.content;
           const ttsKey = data?.chunk?.data?.tts_key;
-
+          
           // 文本更新
           if (chunk) onMessage(data?.chunk?.data);
 
