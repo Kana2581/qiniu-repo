@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     MINIO_PORT:int
     MINIO_ACCESS_KEY:str
     MINIO_SECRET_KEY:str
+    TTS_AND_ASR_API_KEY:str
     class Config:
         env_file = ".env"
 

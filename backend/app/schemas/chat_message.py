@@ -13,6 +13,7 @@ class ChatMessageBase(BaseModel):
     tool_call_id: Optional[str] = Field(None, description="工具调用id，引用 langgraph_id")
     name: Optional[str] = Field(None, description="工具调用名")
     artifact: Optional[str] = Field(None, description="artifact")
+    tts_key:Optional[str]=Field(None,description="tts_key")
     parent_message_id: Optional[str] = Field(None, description="<UNK>ID")
     message_group_id: Optional[str] = Field(None, description="<UNK>ID")
     # ✅ 使用 model_validator 实现 langgraph_id 到 id 的映射

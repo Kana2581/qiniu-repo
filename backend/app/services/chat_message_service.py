@@ -76,6 +76,7 @@ async def save_chat_messages_batch(
             name=msg.name,
             message_group_id=msg.message_group_id,
             artifact=msg.artifact,
+            tts_key=msg.tts_key,
         )
         for msg in messages
     ]

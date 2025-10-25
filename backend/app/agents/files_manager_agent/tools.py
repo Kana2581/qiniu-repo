@@ -1,42 +1,70 @@
 # 文件根目录（可修改）
 import shutil
 from pathlib import Path
+from typing import Dict
 
+from langchain.tools import ToolRuntime
 from langchain_core.tools import tool
 import os
 import subprocess
 import platform
-BASE_DIR = Path("E:\\music_test")
-BASE_DIR.mkdir(exist_ok=True)
 
-# 获取文件列表
-def safe_path(rel_path: str) -> Path:
+from typing_extensions import Annotated
+from langgraph.prebuilt import InjectedState
+
+from backend.app.agents.files_manager_agent.state import FileAgentState, ToolState
+
+
+def safe_path(base_dir: str, rel_path: str) -> Path:
     """
-    确保访问路径安全（限制在 BASE_DIR 内）。
+    确保访问路径安全（限制在 base_dir 内）。
+
     Args:
+        base_dir (str): 基准目录。
         rel_path (str): 相对路径。
+
     Raises:
-        ValueError: 当路径超出 BASE_DIR 时。
+        ValueError: 当路径超出 base_dir 时。
+        FileNotFoundError: 当 base_dir 不存在且无法创建时。
+
     Returns:
         Path: 安全的绝对路径对象。
     """
-    p = (BASE_DIR / rel_path).resolve()
-    if not str(p).startswith(str(BASE_DIR)):
-        raise ValueError("Unsafe path access detected.")
-    return p
+    base_path = Path(base_dir).resolve()
+
+    # 检查 base_dir 是否存在，如果不存在尝试创建
+    try:
+        if not base_path.exists():
+            base_path.mkdir(parents=True, exist_ok=True)
+        elif not base_path.is_dir():
+            raise ValueError(f"Base directory '{base_dir}' 不是一个合法目录。")
+    except Exception as e:
+        raise FileNotFoundError(f"无法访问或创建目录 '{base_dir}'：{e}")
+
+    # 构造目标路径并解析为绝对路径
+    target_path = (base_path / rel_path).resolve()
+
+    # 检查路径是否超出 base_dir 边界
+    if base_path not in target_path.parents and target_path != base_path:
+        raise ValueError(f"非法访问：'{target_path}' 不在 '{base_path}' 目录下。")
+
+    return target_path
 
 
 @tool
-def show_tree(path: str = ".", include_dirs: bool = True, recursive: bool = True, limit: int = 60):
+def show_tree(runtime: ToolRuntime,path: str="",include_dirs:bool=True, recursive:bool=True, limit:int=60):
     """
     以树形结构显示目录内容，超过阈值自动停止。
     Args:
-        path (str): 相对目录路径，默认当前目录。
+        path (str): 相对目录路径，默认当前目录 。
         include_dirs (bool): 是否显示目录，默认 True。
         recursive (bool): 是否递归，默认 True。
         limit (int): 最大节点数量阈值，默认 60。
     """
-    base = safe_path(path)
+    base_dir = runtime.state.get("base_file_path")
+    path = safe_path(base_dir,path)
+    print(path)
+    base = Path(path).resolve()
     if not base.exists():
         return {"error": "Source path not found."}
 
@@ -47,35 +75,44 @@ def show_tree(path: str = ".", include_dirs: bool = True, recursive: bool = True
         nonlocal count
         if count >= limit:
             return
-        tree_lines.append(f"{prefix}{p.name}/" if p.is_dir() else f"{prefix}{p.name}")
-        count += 1
-        if count >= limit:
-            return
-        if p.is_dir() and recursive:
-            children = sorted(p.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower()))
-            for idx, child in enumerate(children):
-                if count >= limit:
-                    break
-                branch = "└── " if idx == len(children) - 1 else "├── "
-                extension = "    " if idx == len(children) - 1 else "│   "
-                _tree(child, prefix + extension if child.is_dir() else prefix + branch)
 
-    _tree(base, "")
-    result = {"file tree": "\n".join(tree_lines)}
+        children = sorted(p.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower()))
+        for idx, child in enumerate(children):
+            if count >= limit:
+                break
+
+            connector = "└── " if idx == len(children) - 1 else "├── "
+            line = f"{prefix}{connector}{child.name}/" if child.is_dir() else f"{prefix}{connector}{child.name}"
+            if child.is_dir() or include_dirs:
+                tree_lines.append(line)
+                count += 1
+
+            if child.is_dir() and recursive:
+                extension = "    " if idx == len(children) - 1 else "│   "
+                _tree(child, prefix + extension)
+
+    _tree(base)
+
+    result = {
+        "base path": base.name,  # 当前展示的目录名
+        "file tree": "\n".join(tree_lines)
+    }
     if count >= limit:
         result["warning"] = f"文件过多（>{limit}），已提前停止显示。"
+
     return result
 
 
 @tool
-def read_file(filename: str, max_length: int = 1000):
+def read_file(runtime: ToolRuntime,filename: str, max_length: int = 1000):
     """
     读取文件内容，非文本文件或过大内容会有提示。
     Args:
         filename (str): 文件名（相对 BASE_DIR）。
         max_length (int): 最大返回字符数，默认1000。
     """
-    path = safe_path(filename)
+    base_dir = runtime.state.get("base_file_path")
+    path = safe_path(base_dir,filename)
     if not path.exists():
         return {"error": "Source path not found."}
     if not path.is_file():
@@ -97,7 +134,7 @@ def read_file(filename: str, max_length: int = 1000):
 
 
 @tool
-def write_file(filename: str, content: str):
+def write_file(runtime: ToolRuntime,filename: str, content: str):
     """
     写入内容到文件（覆盖）。
     Args:
@@ -106,14 +143,15 @@ def write_file(filename: str, content: str):
     Returns:
         dict: {"message": "File written."}
     """
-    path = safe_path(filename)
+    base_dir = runtime.state.get("base_file_path")
+    path = safe_path(base_dir,filename)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
     return {"message": f"File '{filename}' written."}
 
 
 @tool
-def delete_file(filename: str):
+def delete_file(runtime: ToolRuntime,filename: str):
     """
     删除文件。
     Args:
@@ -123,7 +161,8 @@ def delete_file(filename: str):
     Returns:
         dict: {"message": "File deleted."}
     """
-    path = safe_path(filename)
+    base_dir = runtime.state.get("base_file_path")
+    path = safe_path(base_dir,filename)
     if not path.exists():
         return {"error": f"Source path not found."}
     path.unlink()
@@ -131,7 +170,7 @@ def delete_file(filename: str):
 
 
 @tool
-def create_dir(dirname: str):
+def create_dir(runtime: ToolRuntime,dirname: str):
     """
     创建新目录（递归）。
     Args:
@@ -139,13 +178,15 @@ def create_dir(dirname: str):
     Returns:
         dict: {"message": "Directory created."}
     """
-    path = safe_path(dirname)
+    base_dir = runtime.state.get("base_file_path")
+    path = safe_path(base_dir,dirname)
+
     path.mkdir(parents=True, exist_ok=True)
     return {"message": f"Directory '{dirname}' created."}
 
 
 @tool
-def rename_path(old_name: str, new_name: str):
+def rename_path(runtime: ToolRuntime,old_name: str, new_name: str):
     """
     重命名文件或目录。
     Args:
@@ -154,8 +195,10 @@ def rename_path(old_name: str, new_name: str):
     Returns:
         dict: {"message": "Renamed 'a' -> 'b'."}
     """
-    old = safe_path(old_name)
-    new = safe_path(new_name)
+    base_dir = runtime.state.get("base_file_path")
+
+    old = safe_path(base_dir,old_name)
+    new = safe_path(base_dir,new_name)
     if not old.exists():
         return {"error": f"Source path not found."}
     new.parent.mkdir(parents=True, exist_ok=True)
@@ -164,7 +207,7 @@ def rename_path(old_name: str, new_name: str):
 
 
 @tool
-def copy_path(src: str, dest: str):
+def copy_path(runtime: ToolRuntime,src: str, dest: str):
     """
     复制文件或目录。
     Args:
@@ -175,8 +218,9 @@ def copy_path(src: str, dest: str):
     Returns:
         dict: {"message": "Copied 'src' -> 'dest'."}
     """
-    s = safe_path(src)
-    d = safe_path(dest)
+    base_dir = runtime.state.get("base_file_path")
+    s = safe_path(base_dir,src)
+    d = safe_path(base_dir,dest)
     if not s.exists():
         raise FileNotFoundError("Source path not found.")
     d.parent.mkdir(parents=True, exist_ok=True)
@@ -188,7 +232,7 @@ def copy_path(src: str, dest: str):
 
 
 @tool
-def move_path(src: str, dest: str):
+def move_path(runtime: ToolRuntime,src: str, dest: str):
     """
     移动（剪切）文件或目录。
     Args:
@@ -199,8 +243,9 @@ def move_path(src: str, dest: str):
     Returns:
         dict: {"message": "Moved 'src' -> 'dest'."}
     """
-    s = safe_path(src)
-    d = safe_path(dest)
+    base_dir = runtime.state.get("base_file_path")
+    s = safe_path(base_dir,src)
+    d = safe_path(base_dir,dest)
     if not s.exists():
         raise FileNotFoundError("Source path not found.")
     d.parent.mkdir(parents=True, exist_ok=True)
@@ -209,7 +254,7 @@ def move_path(src: str, dest: str):
 
 
 @tool
-def open_file(filepath: str):
+def open_file(runtime: ToolRuntime,filepath: str):
     """
     使用系统默认程序打开文件或目录。
     Args:
@@ -217,7 +262,8 @@ def open_file(filepath: str):
     Returns:
         dict: {"message": "✅ Opened: path"} 或错误信息。
     """
-    path = safe_path(filepath)
+    base_dir = runtime.state.get("base_file_path")
+    path = safe_path(base_dir,filepath)
     if not path.exists():
         return {"message": f"❌ File not found: {filepath}"}
     system = platform.system()
@@ -234,7 +280,7 @@ def open_file(filepath: str):
     except Exception as e:
         return {"message": f"⚠️ Error: {e}"}
 @tool
-def run_command(command: str, shell_type: str = None, max_output: int = 1000):
+def run_command(runtime: ToolRuntime,command: str, shell_type: str = None, max_output: int = 1000):
     """
     执行系统命令（cmd / powershell / shell）。
     Args:
@@ -242,27 +288,39 @@ def run_command(command: str, shell_type: str = None, max_output: int = 1000):
         shell_type (str): 可选，Windows: "cmd" 或 "powershell"，其他系统忽略。
         max_output (int): 输出截断长度，默认1000字符。
     """
+    import subprocess, platform, os
+    base_dir = runtime.state.get("base_file_path")
+
+    import subprocess, platform
+
     system = platform.system()
     shell_cmd = command
 
     if system == "Windows":
         if shell_type == "powershell":
-            shell_cmd = ["powershell", "-Command", command]
+            # ✅ PowerShell 默认支持 UTF-8，可强制使用 UTF-8 输出
+            shell_cmd = ["powershell", "-NoProfile", "-Command",
+                         f"$OutputEncoding = [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; {command}"]
         else:  # 默认 cmd
-            shell_cmd = ["cmd", "/c", command]
-    # macOS/Linux 使用默认 shell，不需要修改
+            # ✅ CMD 强制以 UTF-8 执行命令
+            shell_cmd = ["cmd", "/c", f"chcp 65001 >nul && {command}"]
 
     try:
         result = subprocess.run(
             shell_cmd,
+            cwd=base_dir,
             capture_output=True,
             text=True,
-            shell=(system != "Windows"),  # Windows 已经用 list
-            timeout=60  # 防止无限阻塞
+            encoding="utf-8",  # ✅ 强制解码为 UTF-8
+            errors="replace",  # ✅ 避免乱码崩溃，用 � 替代非法字符
+            shell=(system != "Windows"),
+            timeout=60
         )
-        stdout = result.stdout
-        stderr = result.stderr
+
+        stdout = (result.stdout or "").strip()
+        stderr = (result.stderr or "").strip()
         warning = None
+
         if len(stdout) > max_output:
             stdout = stdout[:max_output]
             warning = f"输出过长（>{max_output}字符），已截断显示。"
@@ -283,4 +341,8 @@ def run_command(command: str, shell_type: str = None, max_output: int = 1000):
         return {"error": "命令执行超时。"}
     except Exception as e:
         return {"error": f"命令执行失败: {e}"}
+
+
+
+
 tools_list = [write_file, read_file, show_tree, delete_file,open_file,rename_path,copy_path,move_path,run_command,create_dir]

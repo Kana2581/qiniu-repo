@@ -6,9 +6,9 @@ from backend.app.core.database import Base
 
 
 from sqlalchemy import (
-    Column, Integer, String, Text, DateTime, Enum, JSON
+    Column, Integer, String, Text, DateTime, Enum, JSON, TIMESTAMP
 )
-from datetime import datetime
+from datetime import datetime, UTC
 import enum
 
 
@@ -40,7 +40,7 @@ class ChatMessage(Base):
     tool_call_id = Column(String(64), comment="工具调用ID，引用langgraph_id")
     name = Column(String(255), comment="工具调用名")
     message_group_id = Column(String(64), comment="消息分组ID")
-
+    tts_key=Column(String(255),comment="对象存储key",nullable=True)
     # SQLite 用 DateTime + default
-    created_at = Column(DateTime, default=datetime.now(), nullable=False, comment="创建时间")
-    updated_at = Column(DateTime, default=datetime.now(), nullable=False, comment="更新时间")
+    created_at = Column(TIMESTAMP, default=datetime.now(UTC))
+    updated_at = Column(TIMESTAMP, default=datetime.now(UTC), onupdate=datetime.utcnow)
