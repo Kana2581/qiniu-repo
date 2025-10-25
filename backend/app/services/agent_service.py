@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from langchain_core.messages import AIMessage, HumanMessage, message_to_dict, ToolMessage
+from langchain_core.messages import AIMessage, HumanMessage, message_to_dict, ToolMessage, AIMessageChunk
 from langchain_core.messages.tool import tool_call
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,7 +14,7 @@ from backend.app.schemas.model_config import ModelConfig
 from backend.app.services.chat_message_service import fetch_valid_langgraph_chat_messages, save_chat_messages_batch
 from backend.app.utils.agent_util import chat_messages_base2base_message, base_message2chat_messages_base, sse_format, \
     voice_prompts, base64_format
-from backend.app.utils.voice_util import TTSClient
+from backend.app.utils.voice_util import TTSClient, text_to_speech_segments, merge_audio_base64_segments
 import backend.app.utils.kobo_util as oss_util
 
 async def handle_chat_completion(id:str,thread_id: str,content: str,db: AsyncSession):
@@ -47,39 +47,58 @@ async def handle_chat_completion(id:str,thread_id: str,content: str,db: AsyncSes
     messages_pending = [HumanMessage(content=content, id=id)]
     tts=TTSClient(settings.TTS_AND_ASR_API_KEY)
     tts_pending= [None]
-    async for chunk in graph.astream(
+    stream_tokens=[]
+    final_audio_b64=None
+    audio_segments=[]
+    async for type,chunk in graph.astream(
             input={
                 "messages": messages,
                 "base_file_path":base_file_path,
             },
-            stream_mode="updates"
+            stream_mode=["updates","messages"]
     ):
         # 获取唯一的 key
 
-        only_key = next(iter(chunk))
-        res_message = chunk[only_key]['messages'][-1]
+        if type=="updates":
+            only_key = next(iter(chunk))
+            res_message = chunk[only_key]['messages'][-1]
 
-        messages_pending.append(res_message)
-        tts_key=None
+            messages_pending.append(res_message)
+            tts_key=None
 
-        if isinstance(res_message, AIMessage) and res_message.content is not None and res_message.content != "":
-            base64=tts.text_to_speech(res_message.content)
-            tts_bytes=tts.base64_to_bytes(base64)
-            if tts_bytes:
-                tts_key=res_message.id+".mp3"
-                oss_util.upload_data(tts_bytes, tts_key)
-        if isinstance(res_message,AIMessage) and len(res_message.tool_calls)>0:
-            tool_call_string=""
-            for tool_call in res_message.tool_calls:
-                tool_call_string+=voice_prompts[tool_call["name"]]
-            tool_call_base64=tts.text_to_speech(tool_call_string)
-            print(tool_call_base64)
-            yield base64_format(tool_call_base64)
+            if isinstance(res_message, AIMessage) and res_message.content is not None and res_message.content != "":
+                #base64=tts.text_to_speech(res_message.content)
+                #tts_bytes=tts.base64_to_bytes(base64)
+                tts_bytes = merge_audio_base64_segments(audio_segments)
 
-        tts_pending.append(tts_key)
+                if tts_bytes:
+                    tts_key=res_message.id+".wav"
+                    oss_util.upload_data(tts_bytes, tts_key,mime_type="audio/wav")
+            if isinstance(res_message,AIMessage) and len(res_message.tool_calls)>0:
+                tool_call_string=""
+                for tool_call in res_message.tool_calls:
+                    tool_call_string+=voice_prompts[tool_call["name"]]
+                tool_call_base64=tts.text_to_speech(tool_call_string)
 
-        yield sse_format(res_message,tts_key)
+                yield base64_format(tool_call_base64)
 
+            tts_pending.append(tts_key)
+            if isinstance(res_message, AIMessage):
+                yield sse_format(res_message,tts_key)
+        else:
+            tmp_message=chunk[0]
+            if isinstance(tmp_message, AIMessageChunk) and tmp_message.content is not None and tmp_message.content != "":
+
+                stream_tokens.append(tmp_message.content)
+                tmp_audio_segments, remain_text =  text_to_speech_segments(stream_tokens,tts.text_to_speech)
+
+
+                for tmp_audio_segment in tmp_audio_segments:
+                    yield base64_format(tmp_audio_segment)
+                    audio_segments+=[tmp_audio_segment]
+
+                stream_tokens=[remain_text]
+            #print(len(audio_segments))
     new_chat_message_bases=base_message2chat_messages_base(messages_pending,tts_pending)
     #之后才会对表进行修改和插入，之前只有查找操作
 

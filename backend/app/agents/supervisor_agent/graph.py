@@ -22,8 +22,8 @@ supervisor_agent = create_agent(
 
 )
 
-# messages=supervisor_agent.ainvoke({"messages": [{"role": "user", "content":"你可以写一个关于蜘蛛的冒险小说并写到蜘蛛冒险故事.txt文件里"}]})
-# messages=asyncio.run(messages)
-# for message in messages["messages"]:
-#     print(message)
+messages=supervisor_agent.ainvoke({"messages": [{"role": "user", "content":"你可以写一个关于蜘蛛的冒险小说并写到蜘蛛冒险故事.txt文件里"}]})
+messages=asyncio.run(messages)
+for message in messages["messages","updates"]:
+    print(message)
 
