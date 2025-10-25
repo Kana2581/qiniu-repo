@@ -148,7 +148,7 @@ def text_to_speech_segments(stream_tokens, call_tts_api, min_len=10, max_len=40)
 
     for token in stream_tokens:
         buffer += token
-        buffer.replace("**", "")
+        buffer=buffer.replace("**", "")
         # 判断是否可以触发
         if len(buffer) >= min_len and has_punctuation(buffer):
             if is_sentence_end(buffer) or len(buffer) >= max_len:

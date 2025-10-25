@@ -3,11 +3,15 @@
 
 from typing import Optional, List
 from sqlalchemy import select, update, text, Result
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.models.chat_message import ChatMessage
 
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import text
+from sqlalchemy.engine import Result
 
+from typing import List
+import json
 async def insert_message(
     message: ChatMessage,
     db: AsyncSession,
@@ -86,12 +90,7 @@ async def get_messages_by_thread_id(
     # 返回按 ID 升序（即时间正序）的消息列表
     return list(reversed(messages))
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql import text
-from sqlalchemy.engine import Result
 
-from typing import List
-import json
 
 async def get_message_chain(db: AsyncSession, langgraph_id: str,thread_id:str) -> List[ChatMessage]:
     sql = text("""
