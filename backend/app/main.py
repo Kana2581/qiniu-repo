@@ -1,3 +1,4 @@
+import os
 
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -6,6 +7,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from backend.app.core.connection import engine
 from backend.app.core.database import Base
+from backend.app.core.settings import settings
 from backend.app.routers import router as api_router
 
 from backend.app.middlewares.logging import LoggingMiddleware
@@ -14,7 +16,10 @@ from backend.app.middlewares.logging import LoggingMiddleware
 app = FastAPI()
 # sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 # sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
-
+if settings.HTTP_PROXY is not None:
+    os.environ["http_proxy"] = settings.HTTP_PROXY
+if settings.HTTPS_PROXY is not None:
+    os.environ["https_proxy"] = settings.HTTPS_PROXY
 
 
 app.add_middleware(
