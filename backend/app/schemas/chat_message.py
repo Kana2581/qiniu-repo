@@ -16,7 +16,7 @@ class ChatMessageBase(BaseModel):
     tts_key:Optional[str]=Field(None,description="tts_key")
     parent_message_id: Optional[str] = Field(None, description="<UNK>ID")
     message_group_id: Optional[str] = Field(None, description="<UNK>ID")
-    # ✅ 使用 model_validator 实现 langgraph_id 到 id 的映射
+    # 使用 model_validator 实现 langgraph_id 到 id 的映射
     @model_validator(mode="before")
     @classmethod
     def map_langgraph_id(cls, data: Any):

@@ -3,14 +3,13 @@ import traceback
 
 
 from fastapi import APIRouter, Path, Body, Depends
-from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import StreamingResponse
 
 from backend.app.core.database import get_db_ctx, get_db
 from backend.app.core.logging_config import get_logger
 from backend.app.core.settings import settings
-from backend.app.models.completion import CompletionRequest
+from backend.app.schemas.completion import CompletionRequest
 from backend.app.services.agent_service import handle_chat_completion
 import backend.app.utils.kobo_util as oss_util
 from backend.app.services.chat_message_service import fetch_valid_langgraph_chat_messages

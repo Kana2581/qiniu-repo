@@ -18,8 +18,7 @@ voice_util.py - 七牛云语音工具集（TTS + ASR）
 import io
 import re
 
-import requests
-import base64
+
 
 
 # =====================

@@ -2,16 +2,15 @@ import qiniu
 import requests
 from qiniu import Auth
 
+from backend.app.core.settings import settings
+
 # =====================
 # 七牛云配置
 # =====================
-ACCESS_KEY = "u8m_iHVCjL_TpavtFHneGWzQEqD_qnao1oENtcYF"
-SECRET_KEY = "tgqIYVizDMW31PYaVyuHEt5kY9sp7NygIh4gKzdR"
-BUCKET_NAME = "lgdhui"
-BUCKET_DOMAIN = "t4j53svoq.hb-bkt.clouddn.com"
+
 
 # 认证对象
-auth = Auth(ACCESS_KEY, SECRET_KEY)
+auth = Auth(settings.KOBO_ACCESS_KEY, settings.KOBO_SECRET_KEY)
 
 
 # =====================
@@ -25,7 +24,7 @@ def upload_data(data:bytes, key: str, mime_type: str = "audio/mpeg") -> bool:
     :param mime_type: 文件类型
     :return: 上传是否成功
     """
-    token = auth.upload_token(BUCKET_NAME)
+    token = auth.upload_token(settings.KOBO_BUCKET_NAME)
     ret, info = qiniu.put_data(token, key, data, mime_type=mime_type)
     if ret is not None:
         return True
@@ -44,7 +43,7 @@ def get_private_url(key: str, expires: int = 3600) -> str:
     :param expires: 链接过期时间，单位秒
     :return: 私有文件下载URL
     """
-    base_url = f"http://{BUCKET_DOMAIN}/{key}"
+    base_url = f"http://{settings.KOBO_BUCKET_DOMAIN}/{key}"
     private_url = auth.private_download_url(base_url, expires=expires)
     return private_url
 

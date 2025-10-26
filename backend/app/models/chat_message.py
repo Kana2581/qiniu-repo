@@ -6,18 +6,9 @@ from backend.app.core.database import Base
 
 
 from sqlalchemy import (
-    Column, Integer, String, Text, DateTime, Enum, JSON, TIMESTAMP
+    Column, Integer, String, Text, JSON, TIMESTAMP
 )
 from datetime import datetime, UTC
-import enum
-
-
-# 定义枚举类型
-class MessageType(str, enum.Enum):
-    text = "text"
-    image = "image"
-    code = "code"
-    other = "other"
 
 
 class ChatMessage(Base):
@@ -33,7 +24,6 @@ class ChatMessage(Base):
 
     thread_id = Column(String(64), nullable=False, comment="属于哪个对话线程")
 
-    # SQLite 也支持 JSON 类型（底层是 TEXT 存储）
     tool_calls = Column(JSON, comment="工具调用信息（JSON格式）")
 
     langgraph_id = Column(String(64),unique=True, nullable=False, comment="LangGraph 节点 UUID")
@@ -41,6 +31,5 @@ class ChatMessage(Base):
     name = Column(String(255), comment="工具调用名")
     message_group_id = Column(String(64), comment="消息分组ID")
     tts_key=Column(String(255),comment="对象存储key",nullable=True)
-    # SQLite 用 DateTime + default
     created_at = Column(TIMESTAMP, default=datetime.now(UTC))
-    updated_at = Column(TIMESTAMP, default=datetime.now(UTC), onupdate=datetime.utcnow)
+    updated_at = Column(TIMESTAMP, default=datetime.now(UTC), onupdate=datetime.now(UTC))

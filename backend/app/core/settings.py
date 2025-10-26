@@ -10,9 +10,6 @@ class Settings(BaseSettings):
     #MySQL数据库url
     DATABASE_URL: str
 
-    #是否开启langgraph的保存workflow的png保存
-    SAVE_GRAPH_IMAGE: bool = False
-
     #是否开启网络代理
     HTTP_PROXY: str | None = None
     #是否开启网络代理
@@ -34,11 +31,12 @@ class Settings(BaseSettings):
 
     LLM_API_KEY:str|None=None
     DEV:bool=True
-    MINIO_HOST:str
-    MINIO_PORT:int
-    MINIO_ACCESS_KEY:str
-    MINIO_SECRET_KEY:str
     TTS_AND_ASR_API_KEY:str
+
+    KOBO_ACCESS_KEY:str
+    KOBO_SECRET_KEY:str
+    KOBO_BUCKET_NAME:str
+    KOBO_BUCKET_DOMAIN:str
     class Config:
         env_file = ".env"
 
