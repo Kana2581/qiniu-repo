@@ -14,7 +14,7 @@ from backend.app.agents.files_manager_agent.tools import tools_list
 #     "When a request involves multiple actions, use multiple tools in sequence."
 # ),
 def get_file_agent(prompt_text:str,model_name:str,provider:str,system_type:str,base_url:str=None,api_key:str=None):
-    model=init_chat_model(model=model_name,model_provider=provider,baseurl=base_url,api_key=api_key)
+    model=init_chat_model(model=model_name,model_provider=provider,base_url=base_url,api_key=api_key)
     return create_agent(
         model=model,
         tools=tools_list,

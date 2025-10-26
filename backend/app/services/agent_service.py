@@ -33,6 +33,7 @@ async def handle_chat_completion(id:str,thread_id: str,content: str,db: AsyncSes
 
     base_file_path=assistant_orm.base_file_path
     system_type=assistant_orm.system_type
+    voice_type=assistant_orm.voice_type
     model_config=ModelConfig.model_validate(assistant_orm)
     graph = get_file_agent(**model_config.model_dump(),system_type=system_type)
 
@@ -40,14 +41,12 @@ async def handle_chat_completion(id:str,thread_id: str,content: str,db: AsyncSes
                                                                    windows_size=windows_size)
 
 
-
-
     messages=chat_messages_base2base_message(chat_message_bases)
-    if messages is None or len(messages)==0:
+    if content is None or len(content)==0:
         raise HTTPException(400,"no messages or no voice")
     messages += [HumanMessage(content=content, id=id)]
     messages_pending = [HumanMessage(content=content, id=id)]
-    tts=TTSClient(settings.TTS_AND_ASR_API_KEY)
+    tts=TTSClient(settings.TTS_AND_ASR_API_KEY,voice_type=voice_type)
     tts_pending= [None]
     stream_tokens=[]
 

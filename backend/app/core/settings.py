@@ -25,11 +25,6 @@ class Settings(BaseSettings):
 
     HISTORY_MAX_TOKENS:int=5000
 
-    LLM_NAME: str
-    LLM_PROVIDER:str
-    LLM_BASE_URL:str|None=None
-
-    LLM_API_KEY:str|None=None
     DEV:bool=True
     TTS_AND_ASR_API_KEY:str
 

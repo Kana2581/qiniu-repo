@@ -28,18 +28,18 @@ import requests
 import base64
 from pydub import AudioSegment
 class TTSClient:
-    def __init__(self, api_key: str, base_url: str = "https://openai.qiniu.com/v1/voice/tts"):
+    def __init__(self, api_key: str, base_url: str = "https://openai.qiniu.com/v1/voice/tts",voice_type: str = "qiniu_zh_female_wwxkjx"):
         self.api_key = api_key
         self.base_url = base_url
         self.headers = {
             "Content-Type": "application/json",
             "Authorization": f"{self.api_key}"
         }
+        self.voice_type = voice_type
 
     def text_to_speech(
         self,
         text: str,
-        voice_type: str = "qiniu_zh_female_wwxkjx",
         encoding: str = "wav",
         speed_ratio: float = 1.0,
     ) -> str | None:
@@ -48,7 +48,7 @@ class TTSClient:
         """
         payload = {
             "audio": {
-                "voice_type": voice_type,
+                "voice_type": self.voice_type,
                 "encoding": encoding,
                 "speed_ratio": speed_ratio
             },
