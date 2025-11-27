@@ -27,7 +27,7 @@ class Assistant(Base):
     voice_name = Column(String(100),nullable=False,default='甜美教学小源')
 
 
-    speech_speed = Column(DECIMAL(5, 2), default=1.00)
+    speed_ratio = Column(DECIMAL(5, 2), default=1.00)
     created_at = Column(TIMESTAMP, default=datetime.now(UTC))
     updated_at = Column(TIMESTAMP, default=datetime.now(UTC), onupdate=datetime.now(UTC))
 

@@ -21,7 +21,7 @@ const [form, setForm] = useState({
   window_size: 30,
   voice_name: "",
   voice_type: "",
-  speech_speed: 1.0,
+  speed_ratio: 1.0,
   system_type: "",
   base_file_path: "",
 });
@@ -62,7 +62,7 @@ const [form, setForm] = useState({
     if (e.target.name === "api_key" && value.length > 255) value = value.slice(0, 255);
     if (e.target.name === "voice_type" && value.length > 100) value = value.slice(0, 100);
 
-    if (e.target.name === "speech_speed") {
+    if (e.target.name === "speed_ratio") {
       if (value < 0.5) value = 0.5;
       if (value > 3.0) value = 3.0;
       value = Number(value.toFixed(2));
@@ -277,10 +277,10 @@ const [form, setForm] = useState({
           <div>
             <label className="block mb-1 font-medium">语速</label>
             <input
-              name="speech_speed"
+              name="speed_ratio"
               type="number"
               step="0.01"
-              value={form.speech_speed}
+              value={form.speed_ratio}
               onChange={handleChange}
               className="w-full border rounded px-3 py-2"
               min={0.5}

@@ -15,7 +15,7 @@ class AssistantCreate(BaseModel):
     window_size: Optional[int] = 30
     voice_name: Optional[str] = None
     voice_type: Optional[str] = None
-    speech_speed: float = 1.0
+    speed_ratio: float = 1.0
     system_type: Optional[str] = None
     base_file_path: str = None
 
@@ -33,7 +33,7 @@ class AssistantUpdate(BaseModel):
     prompt_text: Optional[str] = None
     window_size: Optional[int] = None
     voice_type: Optional[str] = None
-    speech_speed: float = 1.0
+    speed_ratio: float = 1.0
     base_file_path: Optional[str] = None
     voice_name: Optional[str] = None
     system_type: Optional[str] = None
@@ -50,7 +50,7 @@ class AssistantResponse(BaseModel):
     prompt_text: Optional[str]
     window_size: int
     voice_type: Optional[str] = None
-    speech_speed: float = 1.0
+    speed_ratio: float = 1.0
     base_file_path: str = None
     voice_name: Optional[str] = None
     system_type: Optional[str] = None

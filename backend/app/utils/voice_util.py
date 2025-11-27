@@ -28,7 +28,13 @@ import requests
 import base64
 from pydub import AudioSegment
 class TTSClient:
-    def __init__(self, api_key: str, base_url: str = "https://openai.qiniu.com/v1/voice/tts",voice_type: str = "qiniu_zh_female_wwxkjx"):
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str = "https://openai.qiniu.com/v1/voice/tts",
+        voice_type: str = "qiniu_zh_female_wwxkjx",
+        speed_ratio: float = 1.0,
+    ):
         self.api_key = api_key
         self.base_url = base_url
         self.headers = {
@@ -36,21 +42,27 @@ class TTSClient:
             "Authorization": f"{self.api_key}"
         }
         self.voice_type = voice_type
+        self.speed_ratio = speed_ratio
+        print(speed_ratio)
 
     def text_to_speech(
         self,
         text: str,
         encoding: str = "wav",
-        speed_ratio: float = 1.0,
     ) -> str | None:
         """
-        返回生成的语音二进制数据
+        文本转语音
+        :param text: 要转换的文本
+        :param encoding: 输出音频格式 (如 wav/mp3)
+
+        :return: base64 音频字符串 或 None
         """
+        print(self.speed_ratio)
         payload = {
             "audio": {
                 "voice_type": self.voice_type,
                 "encoding": encoding,
-                "speed_ratio": speed_ratio
+                "speed_ratio": self.speed_ratio
             },
             "request": {
                 "text": text
@@ -68,17 +80,15 @@ class TTSClient:
         audio_base64 = data.get("audio") or data.get("data")
         return audio_base64
 
-
-    def base64_to_bytes(self,audio_base64)-> bytes|None:
+    def base64_to_bytes(self, audio_base64) -> bytes | None:
         if not audio_base64:
             return None
-
         try:
-            audio_bytes = base64.b64decode(audio_base64)
-            return audio_bytes
+            return base64.b64decode(audio_base64)
         except Exception as e:
             print(f"解码音频数据失败：{e}")
             return None
+
 
 
 

@@ -21,7 +21,7 @@ export default function VoiceDetail() {
         <p><strong>ID：</strong>{config.id}</p>
         <p><strong>模型ID：</strong>{config.model_id}</p>
         <p><strong>语音类型：</strong>{config.voice_type}</p>
-        <p><strong>语速：</strong>{config.speech_speed}</p>
+        <p><strong>语速：</strong>{config.speed_ratio}</p>
       </div>
       <div className="mt-4">
         <Link to={`/system/voice/edit/${config.id}`} className="text-blue-500 hover:underline">

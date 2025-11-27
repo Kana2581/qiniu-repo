@@ -1,17 +1,18 @@
 import os
 
 from fastapi import FastAPI
+from fastapi_cache import FastAPICache
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 
 
-from backend.app.core.connection import engine
+from backend.app.core.connection import engine, redis_client
 from backend.app.core.database import Base
 from backend.app.core.settings import settings
 from backend.app.routers import router as api_router
 
 from backend.app.middlewares.logging import LoggingMiddleware
-
+from fastapi_cache.backends.redis import RedisBackend
 
 app = FastAPI()
 # sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -46,3 +47,7 @@ async def startup_event():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+    FastAPICache.init(
+        RedisBackend(redis_client),
+        prefix="fastapi-cache"   # 缓存 Key 前缀
+        )

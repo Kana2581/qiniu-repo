@@ -4,7 +4,7 @@ import { Play, Pause, Volume2 } from "lucide-react";
 
 async function fetchAudioUrl(ttsKey) {
   const res = await apiFetch(`/oss?key=${encodeURIComponent(ttsKey)}`, {
-    method: "POST",
+    method: "GET",
     headers: { Accept: "application/json" },
   });
   if (!res.ok) throw new Error(`请求音频失败: ${res.status}`);

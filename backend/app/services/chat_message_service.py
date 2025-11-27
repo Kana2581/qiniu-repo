@@ -63,8 +63,6 @@ async def save_chat_messages_batch(
     now = datetime.now()
     objs = [
         ChatMessage(
-
-
             type=msg.type,
             content=msg.content,
             tool_calls=msg.tool_calls,
